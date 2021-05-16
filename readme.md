@@ -1,0 +1,1 @@
+To run this app, `cd` into `src` and execute `node index.js`

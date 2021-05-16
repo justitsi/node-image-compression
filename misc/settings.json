@@ -1,0 +1,11 @@
+{
+	"user_quota_kilobytes": 16384,
+	"preffered_format": "auto",
+	"quality": 0.90,
+	"max_file_size_kilobytes": 4096,
+	"max_resolution": "2000x2000",
+	"check_jwt": true,
+	"use_local_public_cert": true,
+	"public_cert_location": "./../certificates/public.pem",
+	"jwt_cookie_name": "jwt_token"
+}

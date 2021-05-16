@@ -1,0 +1,14 @@
+version: "2.2"
+
+services:
+  images:
+    build: .
+    command: >
+        bash -c "NODE_ENV=production node index.js"
+    ports:
+      - "8001:8001"
+    volumes:
+      - ./certificates:/usr/src/app/certificates
+      - ./public_files:/usr/src/app/public_files
+      - ./private_files:/usr/src/app/private_files
+      - ./misc:/usr/src/app/misc

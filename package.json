@@ -1,0 +1,24 @@
+{
+  "name": "node_image_compression",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Hristo Belchev",
+  "license": "ISC",
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cookie-parser": "^1.4.5",
+    "express": "^4.17.1",
+    "fs-extra": "^10.0.0",
+    "https": "^1.0.0",
+    "jsonwebtoken": "^8.5.1",
+    "multer": "^1.4.2",
+    "nano": "^9.0.3",
+    "sharp": "^0.28.2",
+    "util": "^0.12.3",
+    "uuid": "^8.3.2"
+  }
+}

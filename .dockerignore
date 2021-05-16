@@ -1,0 +1,8 @@
+node_modules
+npm-debug.log
+# project files that should be mounted, not directly stored in the container
+private_files
+public_files
+certificates
+misc
+readme.md
