@@ -8,7 +8,7 @@ const log = new Logger();
 const IMAGES_BASE_PATH = path.join(__dirname, '..', '..')
 
 // this has to save metadata to db at some point
-exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings, isPublic) {
+exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings, isPublic, db_conn, serAccs) {
     let result = {
         status: 000,
         message: "",
@@ -32,11 +32,20 @@ exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings
             }
         }
 
-        // have to check user quota here as well
+        // this function has not yet been implemented
+        const quotaOK = await checkUserQuota(db_conn, jwtToken, file.length, serAccs, settings);
+        if (!quotaOK) return {
+            status: 413,
+            message: "File will exceed user quota",
+            saved: false,
+        }
 
         const id = uuidv4() + "." + fType
         const filePath = path.join(IMAGES_BASE_PATH, imageSubDir, `${id}`);
         fs.writeFileSync(filePath, file)
+
+        const saveOK = await addImgDataToDB(db_conn, jwtToken, id, file.length, isPublic);
+        if (!saveOK) throw ("Problem saving image metadata to DB server")
 
         result.status = 200;
         result.message = "saved";
@@ -52,6 +61,54 @@ exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings
             message: "An internal server error has occured",
             saved: false,
         }
+    }
+}
+
+const addImgDataToDB = async (dbInstance, jwtToken, fileID, fileLen, public) => {
+    try {
+        let accessList;
+        if (public) accessList = ["*"];
+        else accessList = [];
+
+        await dbInstance.insert({ _id: fileID, belongsTo: jwtToken.userID, size: fileLen, accessList: accessList });
+        return true;
+    } catch (err) {
+        log.error(err);
+        return false;
+    }
+}
+
+const checkUserQuota = async (dbInstance, jwtToken, fileLen, serviceAccs, settings) => {
+    try {
+        //check if request user is a registered service account
+        for (const acc of serviceAccs) {
+            if (acc.userID.toString() === jwtToken.userID.toString()) {
+                return true;
+            }
+        }
+
+        const q = {
+            selector: {
+                belongsTo: { "$eq": jwtToken.userID },
+            },
+            fields: ["_id", "size"],
+            limit: (settings.user_maximum_num_of_files + 10)
+        };
+
+        const resultItems = await dbInstance.find(q)
+
+        // check number of files/entries
+        if (resultItems.docs.length + 1 >= settings.user_maximum_num_of_files) return false;
+
+        // check file sizes
+        let currentBytesUsed = fileLen
+        for (const result of resultItems.docs) {
+            currentBytesUsed += result.size
+        }
+        return (currentBytesUsed / 1024 > settings.user_quota_kilobytes)
+    } catch (err) {
+        log.error(err);
+        return false;
     }
 }
 

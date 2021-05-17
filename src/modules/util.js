@@ -1,6 +1,6 @@
 const fs = require('fs-extra');
 const JWT = require('jsonwebtoken');
-const Logger = require('./Logger')
+const Logger = require('./Logger');
 const log = new Logger();
 
 exports.fetchJWTCert = async (settingsObj) => {
@@ -38,6 +38,7 @@ exports.validateJWT = async (req, res, next) => {
     const SETTINGS = req.app.get('SETTINGS')
     const publicCert = req.app.get('publicCert')
     let valid = false;
+    let decodedJWT;
 
     try {
         if (req.cookies) {
@@ -49,8 +50,10 @@ exports.validateJWT = async (req, res, next) => {
                             const issued = Date.parse(token['issued']);
                             const expires = Date.parse(token['expires']);
 
-                            if (issued < expires)
+                            if (issued < expires) {
                                 valid = true;
+                                decodedJWT = token;
+                            }
                         }
             }
         }
@@ -65,5 +68,29 @@ exports.validateJWT = async (req, res, next) => {
         }
         res.status(500).send(message)
     }
-    else next();
+    else {
+        req.decodedJWT = decodedJWT;
+        next();
+    }
+}
+
+exports.connectToDB = async (dbSettings) => {
+    const dbUrl = `${dbSettings.protocol}://${dbSettings.username}:${dbSettings.password}@${dbSettings.address}:${dbSettings.port}`
+    const nano = require('nano')(dbUrl);
+
+    let db;
+    try {
+        db = nano.db.use(dbSettings.table_name);
+    }
+    catch (err) {
+        try {
+            const result = await nano.db.create(dbSettings.table_name);
+            log.log('Trying to create missing db')
+            log.log(result)
+            db = nano.db.use(dbSettings.table_name);
+        } catch (err) {
+            log.error(err);
+        }
+    }
+    return db
 }

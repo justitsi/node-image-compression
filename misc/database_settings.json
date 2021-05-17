@@ -1,0 +1,8 @@
+{
+    "protocol": "http",
+    "address": "localhost",
+    "port": 5984,
+    "table_name": "image_data",
+    "username": "admin",
+    "password": "password"
+}

@@ -9,12 +9,19 @@ var upload = multer({ storage: storage })
 
 router.put('/', upload.single('file'), async (req, res) => {
     const SETTINGS = req.app.get('SETTINGS')
+    const SERVICE_ACCOUNTS = req.app.get('SERVICE_ACCOUNTS')
+    const db_conn = req.app.get('db_conn')
 
     const file = req.file.buffer
     const fType = req.file.mimetype.split('/')[1]
 
-    const result = await saveImage('private_files', file, fType, req.cookies[SETTINGS.jwt_cookie_name], SETTINGS, false)
+    const result = await saveImage('private_files', file, fType, req.decodedJWT, SETTINGS, false, db_conn, SERVICE_ACCOUNTS)
     res.status(result.status).send(result);
+});
+
+// this will be used to set the permissions to read
+router.post('/:imageID', async (req, res) => {
+
 });
 
 module.exports = router;

@@ -4,7 +4,10 @@ const cookieParser = require('cookie-parser');
 const compression = require('compression');
 
 const SETTINGS = JSON.parse(fs.readFileSync('./../misc/settings.json'));
-const { fetchJWTCert, validateJWT } = require('./modules/util');
+const DB_SETTINGS = JSON.parse(fs.readFileSync('./../misc/database_settings.json'));
+const SERVICE_ACCOUNTS = JSON.parse(fs.readFileSync('./../misc/service_accounts.json'));
+
+const { fetchJWTCert, validateJWT, connectToDB } = require('./modules/util');
 let publicCert = null;
 const Logger = require('./modules/Logger');
 const log = new Logger();
@@ -20,7 +23,7 @@ const deleteRoutePrivateImage = require('./routes/DELETE/private_image')
 const deleteRoutePublicImage = require('./routes/DELETE/public_image')
 
 
-main().catch((err) => log.log(err))
+main().catch((err) => log.error(err))
 async function main() {
     const app = express();
     app.use(cookieParser());
@@ -28,7 +31,9 @@ async function main() {
 
     publicCert = (await fetchJWTCert(SETTINGS)).toString();
     app.set('SETTINGS', SETTINGS);
+    app.set('SERVICE_ACCOUNTS', SERVICE_ACCOUNTS)
     app.set('publicCert', publicCert);
+    app.set('db_conn', await connectToDB(DB_SETTINGS))
 
     // load API routes
     app.use('/liveliness', routeLiveliness);

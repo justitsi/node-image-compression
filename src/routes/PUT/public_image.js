@@ -9,10 +9,13 @@ var upload = multer({ storage: storage })
 
 router.put('/', upload.single('file'), async (req, res) => {
     const SETTINGS = req.app.get('SETTINGS')
+    const SERVICE_ACCOUNTS = req.app.get('SERVICE_ACCOUNTS')
+    const db_conn = req.app.get('db_conn')
 
-    let file = req.file.buffer
+    const file = req.file.buffer
+    const fType = req.file.mimetype.split('/')[1]
 
-    const result = await saveImage('public_files', file, req.cookies[SETTINGS.jwt_cookie_name], SETTINGS, true)
+    const result = await saveImage('public_files', file, fType, req.decodedJWT, SETTINGS, true, db_conn, SERVICE_ACCOUNTS)
 
     res.status(result.status).send(result);
 });

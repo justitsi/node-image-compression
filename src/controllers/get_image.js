@@ -42,7 +42,7 @@ exports.getImage = async function (imageFileName, imageSubDir, public) {
 exports.getImageAtSize = async function (imageFName, imageSubDir, public, sizeStr) {
     const result = await exports.getImage(imageFName, imageSubDir, public)
 
-    if (result.fetched === false) return getImageResult;
+    if (result.fetched === false) return result;
     else {
         try {
             const sizes = sizeStr.split('x')
@@ -61,7 +61,7 @@ exports.getImageAtSize = async function (imageFName, imageSubDir, public, sizeSt
             log.error(err)
             result.fetched = false;
             result.status = 500;
-            return getImageResult;
+            return result;
         }
     }
 }
