@@ -19,14 +19,14 @@ The settings file is used by the image server. The settings are as follows:
 
 6. `max_resolution` - Sets the maximum allowed resolution for images to be stored on the server. The server exprects two a string with two numbers in the `NNNNxNNNN` format. Pictures will be scaled to be *contained*/*fit* in this space. Default value is `2000x2000` 
 
-7. `use_local_public_cert` - Use a local certificate instead of fetching it from JWT issuer at startup. Default value is `true`.
+7. `use_local_public_cert` - Use a local certificate instead of fetching it from JWT issuer at startup. Default value is `true`. Currently, fetching remote public certs is not implemented
 
 8. `public_cert_location` - The file path or url at which the public cert for JWT tokens can be acquired. Get requests with no parameters are used for reading the public certificate from a webserver.
 
 9. `jwt_cookie_name` - The name of the JWT cookie in the incoming request that the server should look for. Default value `jwt_token`.
 
 # The Database settings file
+Set the connection properties for your couchDB instance in this file
 
 # The service_accounts file
-This file contains a list of service accounts for this service. These accounts will not have quota rules enforced on them. Note that the `description` field is not required in the configuration json.
-
+This file contains a list of service accounts for this service. These accounts will not have quota rules enforced on them. Note that the `description` field is not required in the configuration json. The `userID` of the service accoun must match the `userID` of the `jwt_cookie` it uses for authentication
