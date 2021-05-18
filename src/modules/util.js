@@ -80,13 +80,13 @@ exports.connectToDB = async (dbSettings) => {
 
     let db;
     try {
+        const result = await nano.db.create(dbSettings.table_name);
+        log.log('Trying to create db')
+        log.log(result)
         db = nano.db.use(dbSettings.table_name);
     }
     catch (err) {
         try {
-            const result = await nano.db.create(dbSettings.table_name);
-            log.log('Trying to create missing db')
-            log.log(result)
             db = nano.db.use(dbSettings.table_name);
         } catch (err) {
             log.error(err);

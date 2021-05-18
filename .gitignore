@@ -25,3 +25,4 @@ yarn-error.log*
 # test images
 /private_files/*
 /public_files/*
+/db_backup/*

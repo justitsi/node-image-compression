@@ -202,6 +202,15 @@ exports.updateImagePerms = async function (dbInstance, imageID, jwtToken, perms)
             return result;
         }
 
+        // validate image is not already public
+        if (queryRes.accessList[0])
+            if (queryRes.accessList[0].toString() == "*") {
+                result.status = 400;
+                result.message = "Image is public and its permissions cannot be changed"
+                result.updated = false;
+                return result;
+            }
+
         // validate new permissions
         for (const perm of perms.accessList) {
             if (perm.toString() == '*') {

@@ -3,6 +3,12 @@
 ## Intro
 This is a NodeJS image storage solution that is meant to be run as a microservice with docker. It stores images direclty on the filesysten and keeps metadata (owner and access list) in a CouchDB database. It handles converting, resizing and compressing images via the `sharp` library. It uses a `jwt` token in a `jwt_cookie` for authentication and is meant to be used along side the [`jwt_issuer` microservice](https://github.com/justitsi/jwt_issuer_public). The `jwt_cookie` cookie name can customized using the files in the `misc` directory.
 
+## Starting docker containers
+In order to start the docker containers, run:
+1. `./makedirs.sh`
+2. `docker-compose build`
+3. `docker-compose up`
+
 ## Endpoints
 ### GET Routes
 * GET `/liveliness` - returns current liveliness information about the application.  

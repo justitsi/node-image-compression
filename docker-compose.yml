@@ -1,14 +1,37 @@
-version: "2.2"
+version: "3"
 
 services:
   images:
     build: .
+    restart: always
     command: >
         bash -c "NODE_ENV=production node index.js"
     ports:
       - "8001:8001"
+    restart: on-failure
+    depends_on:
+      - couchdb_initializer
     volumes:
       - ./certificates:/usr/src/app/certificates
       - ./public_files:/usr/src/app/public_files
       - ./private_files:/usr/src/app/private_files
       - ./misc:/usr/src/app/misc
+    depends_on:
+      - couchdb_initializer
+  couchdb:
+    image: couchdb:3
+    restart: always
+    environment:
+      - COUCHDB_USER=admin
+      - COUCHDB_PASSWORD=password
+    volumes:
+      - ./db_backup:/opt/couchdb/data
+    ports:
+      - "5984:5984"
+  couchdb_initializer:
+    image: curlimages/curl
+    restart: on-failure
+    depends_on:
+      - couchdb
+    command: ["sh","-c","sleep 15 && curl -u admin:password -X PUT couchdb:5984/_replicator && curl -u admin:password -X PUT couchdb:5984/_users && curl -u admin:password -X PUT couchdb:5984/_global_changes"]
+    
