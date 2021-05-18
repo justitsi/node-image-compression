@@ -2,12 +2,12 @@ const fs = require('fs-extra');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
 const path = require('path');
+const { getImageData } = require('./get_image');
 
 const Logger = require('../modules/Logger');
 const log = new Logger();
 const IMAGES_BASE_PATH = path.join(__dirname, '..', '..')
 
-// this has to save metadata to db at some point
 exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings, isPublic, db_conn, serAccs) {
     let result = {
         status: 000,
@@ -32,7 +32,6 @@ exports.saveImage = async function (imageSubDir, file, fType, jwtToken, settings
             }
         }
 
-        // this function has not yet been implemented
         const quotaOK = await checkUserQuota(db_conn, jwtToken, file.length, serAccs, settings);
         if (!quotaOK) return {
             status: 413,
@@ -105,7 +104,7 @@ const checkUserQuota = async (dbInstance, jwtToken, fileLen, serviceAccs, settin
         for (const result of resultItems.docs) {
             currentBytesUsed += result.size
         }
-        return (currentBytesUsed / 1024 > settings.user_quota_kilobytes)
+        return !(currentBytesUsed / 1024 > settings.user_quota_kilobytes)
     } catch (err) {
         log.error(err);
         return false;
@@ -113,7 +112,6 @@ const checkUserQuota = async (dbInstance, jwtToken, fileLen, serviceAccs, settin
 }
 
 const compressImage = async (file, fType, settings) => {
-    log.log(fType)
     if (fType == 'jpeg') return { data: await convertImageToJpeg(file, settings), format: fType }
     if (fType == 'png') return { data: await convertImageToPng(file, settings), format: fType }
     if (fType == 'auto') {
@@ -182,4 +180,50 @@ const convertImageToPng = async (file, settings) => {
     ).toBuffer();
 
     return resizedFile;
+}
+
+exports.updateImagePerms = async function (dbInstance, imageID, jwtToken, perms) {
+    let result = {
+        status: 000,
+        message: "",
+        updated: false,
+    }
+
+    try {
+        // get image data
+        let queryRes = await getImageData(dbInstance, imageID)
+        queryRes = queryRes.docs[0]
+
+        // validate request sender is owner
+        if (jwtToken.userID.toString() != queryRes.belongsTo.toString()) {
+            result.status = 403;
+            result.message = "You are not the owner of this image"
+            result.updated = false;
+            return result;
+        }
+
+        // validate new permissions
+        for (const perm of perms.accessList) {
+            if (perm.toString() == '*') {
+                result.status = 400;
+                result.message = "The '*' permission is reserved for public images"
+                result.updated = false;
+                return result;
+            }
+        }
+
+        // save updated permissions
+        await dbInstance.insert({ _id: queryRes._id, _rev: queryRes._rev, belongsTo: jwtToken.userID, accessList: perms.accessList });
+
+        result.status = 200;
+        result.message = "Permissions Updated"
+        result.updated = true;
+    } catch (err) {
+        log.error(err)
+
+        result.status = 500;
+        result.message = "Server error"
+        result.updated = false;
+    }
+    return result;
 }

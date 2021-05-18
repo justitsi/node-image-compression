@@ -28,6 +28,7 @@ async function main() {
     const app = express();
     app.use(cookieParser());
     app.use(compression());
+    app.use(express.json());
 
     publicCert = (await fetchJWTCert(SETTINGS)).toString();
     app.set('SETTINGS', SETTINGS);

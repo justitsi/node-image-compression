@@ -7,7 +7,7 @@ const log = new Logger();
 const IMAGES_BASE_PATH = path.join(__dirname, '..', '..')
 
 // this should check for permissions
-exports.getImage = async function (imageFileName, imageSubDir, public) {
+exports.getImage = async function (imageFileName, imageSubDir, public, jwtToken, dbInstance) {
     let result = {
         fetched: false,
         status: 000,
@@ -17,7 +17,14 @@ exports.getImage = async function (imageFileName, imageSubDir, public) {
     const filePath = path.join(IMAGES_BASE_PATH, imageSubDir, imageFileName);
 
     // check permissions here
-    if (!public) { }
+    if (!public) {
+        const permsOK = await checkUserHasAccess(dbInstance, imageFileName, jwtToken)
+        if (!permsOK) {
+            result.fetched = false;
+            result.status = 403;
+            return result;
+        }
+    }
 
     if (await checkIfFileExists(filePath)) {
         try {
@@ -39,8 +46,8 @@ exports.getImage = async function (imageFileName, imageSubDir, public) {
     return result;
 }
 
-exports.getImageAtSize = async function (imageFName, imageSubDir, public, sizeStr) {
-    const result = await exports.getImage(imageFName, imageSubDir, public)
+exports.getImageAtSize = async function (imageFName, imageSubDir, public, sizeStr, jwtToken, dbInstance) {
+    const result = await exports.getImage(imageFName, imageSubDir, public, jwtToken, dbInstance)
 
     if (result.fetched === false) return result;
     else {
@@ -66,7 +73,6 @@ exports.getImageAtSize = async function (imageFName, imageSubDir, public, sizeSt
     }
 }
 
-
 const checkIfFileExists = async (fileName) => {
     let exists = false;
 
@@ -75,4 +81,32 @@ const checkIfFileExists = async (fileName) => {
     } catch (err) { }
 
     return exists;
+}
+
+exports.getImageData = async function (dbInstance, imageID) {
+    const q = {
+        selector: {
+            _id: { "$eq": imageID },
+        },
+        fields: ["_id", "_rev", "belongsTo", "size", "accessList"],
+        limit: (1)
+    };
+    return await dbInstance.find(q)
+}
+
+const checkUserHasAccess = async function (dbInstance, imageID, jwtToken) {
+    try {
+        let queryRes = await exports.getImageData(dbInstance, imageID)
+        queryRes = queryRes.docs[0]
+
+        for (const allowed of queryRes.accessList) {
+            if (allowed.toString() === jwtToken.userID.toString())
+                return true;
+        }
+
+        return false;
+    } catch (err) {
+        log.log(err)
+        return false;
+    }
 }
