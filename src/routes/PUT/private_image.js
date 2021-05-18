@@ -1,11 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const { saveImage, updateImagePerms } = require("../../controllers/put_image");
-
 const multer = require('multer');
 var storage = multer.memoryStorage()
 var upload = multer({ storage: storage })
-
 
 router.put('/', upload.single('file'), async (req, res) => {
     try {

@@ -2,7 +2,6 @@ const express = require('express');
 const router = express.Router();
 const { deleteImage } = require("../../controllers/delete_image");
 
-
 router.delete('/:imageID', async (req, res) => {
     try {
         const db_conn = req.app.get('db_conn')
