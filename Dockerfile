@@ -1,4 +1,5 @@
-FROM node:14
+FROM node:14-alpine
+RUN apk add bash
 WORKDIR /usr/src/app
 
 COPY package*.json ./
