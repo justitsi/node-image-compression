@@ -6,6 +6,6 @@
 	"max_file_size_kilobytes": 4096,
 	"max_resolution": "2000x2000",
 	"use_local_public_cert": true,
-	"public_cert_location": "./../certificates/public.pem",
+	"public_cert_location": "./../certificates/public.crt",
 	"jwt_cookie_name": "jwt_token"
 }
