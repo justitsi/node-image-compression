@@ -33,6 +33,17 @@ async function main() {
     app.use(compression());
     app.use(express.json());
 
+    if (process.env.NODE_ENV !== "production") {
+        const cors = require('cors')
+        const corsOptions = {
+            origin: 'http://localhost:3000',
+            credentials: true
+        }
+
+        app.use(cors(corsOptions))
+        log.log("Running with CORS enabled. To disable run in NODE_ENV=production")
+    }
+
     publicCert = (await fetchJWTCert(SETTINGS)).toString();
     app.set('SETTINGS', SETTINGS);
     app.set('SERVICE_ACCOUNTS', SERVICE_ACCOUNTS)
