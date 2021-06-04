@@ -27,6 +27,7 @@ const deleteRoutePublicImage = require('./routes/DELETE/public_image')
 
 main().catch((err) => log.error(err))
 async function main() {
+    log.log("Starting up image compression instance")
     const app = express();
     app.use(cookieParser());
     app.use(compression());
@@ -52,6 +53,6 @@ async function main() {
     app.use('/delete/private', validateJWT, deleteRoutePrivateImage);
     app.use('/delete/public', validateJWT, deleteRoutePublicImage);
 
+    log.log("Image compression started, listening on port 8001")
     app.listen(8001);
 }
-
