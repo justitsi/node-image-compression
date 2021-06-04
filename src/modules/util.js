@@ -29,7 +29,7 @@ exports.decodeJWT = (token, cert) => {
     try {
         result = JWT.verify(token, cert);
     }
-    catch (err) { log.log(err) }
+    catch (err) { log.error(err) }
 
     return result;
 }
