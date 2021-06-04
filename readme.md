@@ -23,7 +23,7 @@ In order to start the docker containers, run:
 
 * GET `/get/imageData/byOwner` - returns the image IDs for the images the request sender owns. This is determined by the user ID in the jwt token, so a `jwt_cookie` is required.
 
-* GET `/get/imageData/byImageId` - returns the image metadata if the request sender has access to the image - this is determined by using the using the request jwt token, so a `jwt_cookie` is required. 
+* GET `/get/imageData/byImageId/{imageID}` - returns the image metadata if the request sender has access to the image - this is determined by using the using the request jwt token, so a `jwt_cookie` is required. 
 
 ### PUT Routes
 * PUT `/put/private` - this route expects `form-data` in the `Body` of the request - this form should have a `file` key that has the image file that should be uploaded. This route expects a `jwt_cookie` as it sets the image owner based on the information in the cookie.
