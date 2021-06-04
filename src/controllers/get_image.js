@@ -97,16 +97,87 @@ exports.getImageData = async function (dbInstance, imageID) {
 const checkUserHasAccess = async function (dbInstance, imageID, jwtToken) {
     try {
         let queryRes = await exports.getImageData(dbInstance, imageID)
-        queryRes = queryRes.docs[0]
-
-        for (const allowed of queryRes.accessList) {
-            if (allowed.toString() === jwtToken.userID.toString())
-                return true;
+        if (queryRes.docs.length === 0) {
+            log.log(`Image ${imageID} not found`)
+            return false
         }
+        else {
+            queryRes = queryRes.docs[0]
 
-        return false;
+            for (const allowed of queryRes.accessList) {
+                if (allowed.toString() === jwtToken.userID.toString())
+                    return true;
+                if (allowed.toString() === "*")
+                    return true
+            }
+
+            return false;
+        }
     } catch (err) {
         log.log(err)
         return false;
+    }
+}
+
+exports.getUserImageIDs = async function (dbInstance, jwtToken, settings) {
+    try {
+        let userID = jwtToken.userID
+
+        const q = {
+            selector: {
+                belongsTo: { "$eq": userID },
+            },
+            fields: ["_id", "_rev", "belongsTo", "size", "accessList"],
+            limit: (settings.user_maximum_num_of_files + 10)
+        };
+
+
+        const results = await dbInstance.find(q)
+
+        return {
+            fetched: true,
+            status: 200,
+            images: results.docs
+        };
+    } catch (err) {
+        log.log(err)
+        return {
+            fetched: false,
+            status: 500,
+            images: []
+        };
+    }
+}
+
+exports.getImageInfo = async function (imageID, dbInstance, jwtToken) {
+    try {
+
+        if (await checkUserHasAccess(dbInstance, imageID, jwtToken)) {
+            const data = await exports.getImageData(dbInstance, imageID)
+
+            return {
+                fetched: true,
+                status: 200,
+                data: data.docs[0]
+            }
+        }
+        else {
+            return {
+                fetched: false,
+                status: 403,
+                data: {
+                    message: "You do not have the correct permissions to view this image"
+                }
+            }
+        }
+    } catch (err) {
+        log.log(err)
+        return {
+            fetched: false,
+            status: 500,
+            data: {
+                message: "A server error occured while processing your request"
+            }
+        };
     }
 }

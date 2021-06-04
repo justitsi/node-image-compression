@@ -13,8 +13,10 @@ const Logger = require('./modules/Logger');
 const log = new Logger();
 
 const routeLiveliness = require('./routes/liveliness')
+
 const getRoutePrivateImage = require('./routes/GET/private_image')
 const getRoutePublicImage = require('./routes/GET/public_image')
+const getRouteImageInfo = require('./routes/GET/image_info')
 
 const putRoutePrivateImage = require('./routes/PUT/private_image')
 const putRoutePublicImage = require('./routes/PUT/public_image')
@@ -41,6 +43,8 @@ async function main() {
 
     app.use('/get/private', validateJWT, getRoutePrivateImage);
     app.use('/get/public', getRoutePublicImage);
+    app.use('/get/imageData', validateJWT, getRouteImageInfo);
+
 
     app.use('/put/private', validateJWT, putRoutePrivateImage);
     app.use('/put/public', validateJWT, putRoutePublicImage);

@@ -9,8 +9,6 @@ services:
     ports:
       - "8001:8001"
     restart: on-failure
-    depends_on:
-      - couchdb_initializer
     volumes:
       - ./certificates:/usr/src/app/certificates
       - ./public_files:/usr/src/app/public_files
