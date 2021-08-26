@@ -1,6 +1,6 @@
 {
     "protocol": "http",
-    "address": "localhost",
+    "address": "couchdb",
     "port": 5984,
     "table_name": "image_data",
     "username": "admin",
