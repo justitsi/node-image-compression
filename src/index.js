@@ -36,7 +36,12 @@ async function main() {
     if (process.env.NODE_ENV !== "production") {
         const cors = require('cors')
         const corsOptions = {
-            origin: ['http://localhost:3000', 'http://localhost:8080', 'https://localhost:8443'],
+            origin: [
+                'http://localhost:3000',
+                'http://localhost:4480', 'https://localhost:4443',
+                'http://192.168.0.103:4480', 'https://192.168.0.103:4443',
+                'http://justitsi:4480', 'https://justitsi:4443',
+            ],
             credentials: true
         }
 
